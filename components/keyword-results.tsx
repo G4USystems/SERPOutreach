@@ -574,8 +574,7 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
 
               {selectedKeywords.size > 0 && (
                 <p className="text-sm text-muted-foreground">
-                  {selectedKeywords.size} keyword{selectedKeywords.size !== 1 ? "s" : ""} seleccionada
-                  {selectedKeywords.size !== 1 ? "s" : ""}
+                  {`${selectedKeywords.size} keyword${selectedKeywords.size !== 1 ? "s" : ""} seleccionada${selectedKeywords.size !== 1 ? "s" : ""}`}
                 </p>
               )}
             </div>
