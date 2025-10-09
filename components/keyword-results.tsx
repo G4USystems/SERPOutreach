@@ -36,7 +36,7 @@ interface KeywordResultsProps {
   keywordData: KeywordData[]
 }
 
-const SERP_WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach"
+const SERP_WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook-test/SERP-outreach"
 
 export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
@@ -90,10 +90,7 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
       console.log("[v0] URL del webhook:", SERP_WEBHOOK_ENDPOINT)
       console.log("[v0] Iniciando fetch request...")
 
-      // Crear un AbortController para manejar timeout personalizado
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 segundos timeout
-
+      // Sin timeout - esperará todo el tiempo necesario
       const response = await fetch(SERP_WEBHOOK_ENDPOINT, {
         method: "POST",
         headers: { 
@@ -101,12 +98,10 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
           "Accept": "application/json"
         },
         body: JSON.stringify(payload),
-        signal: controller.signal,
         mode: 'cors',
         credentials: 'omit'
       })
 
-      clearTimeout(timeoutId)
       console.log("[v0] Fetch completado, status:", response.status)
       console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
 
@@ -214,9 +209,7 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
       
       let errorMessage = 'Error desconocido'
       if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          errorMessage = 'El webhook tardó demasiado en responder (timeout de 60 segundos). Verifica que el flujo de n8n esté funcionando correctamente.'
-        } else if (err.message.includes('Failed to fetch') || err.message.includes('fetch')) {
+        if (err.message.includes('Failed to fetch') || err.message.includes('fetch')) {
           errorMessage = 'No se pudo conectar con el webhook SERP. Verifica que el flujo de n8n esté activo y la URL sea correcta.'
         } else {
           errorMessage = err.message
