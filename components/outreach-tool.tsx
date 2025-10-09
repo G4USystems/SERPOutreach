@@ -23,6 +23,14 @@ export default function OutreachTool() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [notifications, setNotifications] = useState(3);
   
+  const handleNewCampaign = () => {
+    setCurrentPage('keywords');
+  };
+  
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page);
+  };
+  
   const bgColor = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const textColor = darkMode ? 'text-gray-100' : 'text-gray-900';
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
@@ -138,7 +146,7 @@ export default function OutreachTool() {
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          {currentPage === 'dashboard' && <Dashboard darkMode={darkMode} />}
+          {currentPage === 'dashboard' && <Dashboard darkMode={darkMode} onNewCampaign={handleNewCampaign} onNavigate={handleNavigate} />}
           {currentPage === 'keywords' && <KeywordsPage darkMode={darkMode} />}
           {currentPage === 'opportunities' && <OpportunitiesPage darkMode={darkMode} />}
           {currentPage === 'contacts' && <ContactsPage darkMode={darkMode} />}
@@ -152,7 +160,7 @@ export default function OutreachTool() {
 }
 
 // Dashboard Component
-function Dashboard({ darkMode }: { darkMode: boolean }) {
+function Dashboard({ darkMode, onNewCampaign, onNavigate }: { darkMode: boolean; onNewCampaign: () => void; onNavigate: (page: string) => void }) {
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
   const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
 
@@ -201,12 +209,11 @@ function Dashboard({ darkMode }: { darkMode: boolean }) {
           </p>
         </div>
         <button 
-          disabled
-          className="px-6 py-3 bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg 
-            cursor-not-allowed flex items-center gap-2 opacity-50">
+          onClick={onNewCampaign}
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg 
+            hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-200 flex items-center gap-2">
           <Plus className="w-5 h-5" />
-          New Campaign
-          <span className="text-xs">(Próximamente)</span>
+          Nueva Campaña
         </button>
       </div>
 
@@ -233,7 +240,7 @@ function Dashboard({ darkMode }: { darkMode: boolean }) {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <button 
-          onClick={() => window.location.href = '#keywords'}
+          onClick={() => onNavigate('keywords')}
           className={`${cardBg} ${borderColor} border rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer group text-left`}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg 
@@ -248,7 +255,7 @@ function Dashboard({ darkMode }: { darkMode: boolean }) {
         </button>
 
         <button 
-          onClick={() => window.location.href = '#opportunities'}
+          onClick={() => onNavigate('opportunities')}
           className={`${cardBg} ${borderColor} border rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer group text-left`}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg 
