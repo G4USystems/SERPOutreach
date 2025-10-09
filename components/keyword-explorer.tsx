@@ -20,7 +20,8 @@ interface KeywordExplorerProps {
   onShowResults: (results: KeywordResult[]) => void
 }
 
-const WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/v0-KWs"
+const WEBHOOK_KEYWORDS = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/v0-KWs"
+const WEBHOOK_SERP = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach"
 
 export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
   const [keywords, setKeywords] = useState("")
@@ -50,10 +51,10 @@ export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
       }
       
       console.log("[v0] Enviando payload al webhook:", payload)
-      console.log("[v0] URL del webhook:", WEBHOOK_ENDPOINT)
+      console.log("[v0] URL del webhook:", WEBHOOK_KEYWORDS)
       console.log("[v0] Iniciando fetch request...")
 
-      const response = await fetch(WEBHOOK_ENDPOINT, {
+      const response = await fetch(WEBHOOK_KEYWORDS, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +162,7 @@ export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
         console.error("[v0] Error stack:", err.stack)
         
         if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
-          errorMessage = `No se pudo conectar con el webhook de Keywords. URL: ${WEBHOOK_ENDPOINT}. Error: ${err.message}. Verifica que el flujo de n8n esté activo y la URL sea correcta.`
+          errorMessage = `No se pudo conectar con el webhook de Keywords. URL: ${WEBHOOK_KEYWORDS}. Error: ${err.message}. Verifica que el flujo de n8n esté activo y la URL sea correcta.`
         } else if (err.message.includes("Workflow Webhook Error")) {
           errorMessage = "Error del webhook n8n: El workflow no pudo iniciarse. Verifica que el workflow esté activo y configurado correctamente en n8n."
         } else {

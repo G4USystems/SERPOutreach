@@ -29,6 +29,9 @@ interface SerpResult {
   type_classification?: string | null
   permite_pautar?: string | null
   email_contact?: string | null
+  medio_contacto?: string | null
+  dirección_contacto?: string | null
+  categoría_contacto?: string | null
 }
 
 interface KeywordResultsProps {
@@ -130,21 +133,34 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
           const keywordIndex = Math.floor(index / resultsPerKeyword)
           const assignedKeyword = selectedKeywordTexts[keywordIndex] || selectedKeywordTexts[0] || 'N/A'
           
+          // Extraer dominio de la URL
+          let domain = 'N/A'
+          try {
+            if (item.url) {
+              domain = new URL(item.url).hostname
+            }
+          } catch (e) {
+            console.warn("[v0] Error extrayendo dominio de:", item.url)
+          }
+          
           return {
             id: `${assignedKeyword}-${item.position || index}`,
             keyword: item.query || item.keyword || assignedKeyword,
             url: item.url || 'N/A',
-            title: item.title || item.titulo || 'N/A',
+            title: item.title || item.titulo || item.título || 'N/A',
             position: item.position || (index % 10) + 1,
-            domain: item.url ? new URL(item.url).hostname : 'N/A',
+            domain: domain,
             type: item.type || 'organic',
             channel: item.channel || 'N/A',
             duration: item.duration || item.duracion || null,
             platform: item.platform || item.plataforma || null,
-            razon: item.razon || null,
-            type_classification: item.type_classification || item.tipo_clasificacion || null,
+            razon: item.razon || item.razón || null,
+            type_classification: item.type_classification || item.clasificación || item.tipo_clasificacion || null,
             permite_pautar: item.permite_pautar || null,
-            email_contact: item.email_contact || item.email || null
+            email_contact: item.email_contact || item.email || item.dirección_contacto || null,
+            medio_contacto: item.medio_contacto || null,
+            dirección_contacto: item.dirección_contacto || null,
+            categoría_contacto: item.categoría_contacto || null
           }
         })
       } else if (data && Array.isArray(data.results)) {
@@ -231,10 +247,10 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
   const handleExportCSV = () => {
     if (serpResults.length === 0) return
 
-    const csvHeaders = "Keyword,URL,Titulo,Position,Tipo,Plataforma,Duracion,Tipo_de_medio,Permite_Pautar,Email,Domain\n"
+    const csvHeaders = "Keyword,Titulo,URL,Domain,Clasificacion,Permite_Pautar,Razon,Medio_Contacto,Direccion_Contacto,Categoria_Contacto\n"
     const csvData = serpResults
       .map((result) => 
-        `"${result.keyword}","${result.url}","${result.title}",${result.position},"${result.type || ''}","${result.platform || ''}","${result.duration || ''}","${result.type_classification || ''}","${result.permite_pautar || ''}","${result.email_contact || ''}","${result.domain}"`
+        `"${result.keyword}","${result.title}","${result.url}","${result.domain}","${result.type_classification || ''}","${result.permite_pautar || ''}","${result.razon || ''}","${result.medio_contacto || ''}","${result.dirección_contacto || ''}","${result.categoría_contacto || ''}"`
       )
       .join("\n")
 
@@ -365,35 +381,21 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                     <thead>
                       <tr className="bg-muted/50 border-b">
                         <th className="text-left p-3 font-semibold text-sm">Keyword</th>
-                        <th className="text-left p-3 font-semibold text-sm">Posición</th>
                         <th className="text-left p-3 font-semibold text-sm">Título</th>
                         <th className="text-left p-3 font-semibold text-sm">URL</th>
                         <th className="text-left p-3 font-semibold text-sm">Dominio</th>
-                        <th className="text-left p-3 font-semibold text-sm">Tipo</th>
-                        <th className="text-left p-3 font-semibold text-sm">Plataforma</th>
-                        <th className="text-left p-3 font-semibold text-sm">Duración</th>
-                        <th className="text-left p-3 font-semibold text-sm">Tipo de medio</th>
+                        <th className="text-left p-3 font-semibold text-sm">Clasificación</th>
                         <th className="text-left p-3 font-semibold text-sm">Permite Pautar</th>
-                        <th className="text-left p-3 font-semibold text-sm">Email</th>
+                        <th className="text-left p-3 font-semibold text-sm">Razón</th>
+                        <th className="text-left p-3 font-semibold text-sm">Medio Contacto</th>
+                        <th className="text-left p-3 font-semibold text-sm">Dirección Contacto</th>
+                        <th className="text-left p-3 font-semibold text-sm">Categoría Contacto</th>
                       </tr>
                     </thead>
                     <tbody>
                       {serpResults.map((result) => (
                         <tr key={result.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors text-sm">
                           <td className="p-3 font-medium text-blue-600">{result.keyword}</td>
-                          <td className="p-3">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                result.position <= 3
-                                  ? "bg-green-100 text-green-800"
-                                  : result.position <= 10
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              #{result.position}
-                            </span>
-                          </td>
                           <td className="p-3 max-w-md">
                             <div className="truncate" title={result.title}>
                               {result.title}
@@ -411,25 +413,6 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                             </a>
                           </td>
                           <td className="p-3 font-medium text-gray-700">{result.domain}</td>
-                          <td className="p-3">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                result.type === "organic"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : result.type === "video"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {result.type || 'organic'}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            {result.platform || '-'}
-                          </td>
-                          <td className="p-3">
-                            {result.duration || '-'}
-                          </td>
                           <td className="p-3">
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -458,8 +441,23 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                               {result.permite_pautar || 'N/A'}
                             </span>
                           </td>
-                          <td className="p-3 text-xs">
-                            {result.email_contact || '-'}
+                          <td className="p-3 text-sm">
+                            {result.razon || '-'}
+                          </td>
+                          <td className="p-3 text-sm">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                              {result.medio_contacto || '-'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-sm max-w-xs">
+                            <div className="truncate" title={result.dirección_contacto || '-'}>
+                              {result.dirección_contacto || '-'}
+                            </div>
+                          </td>
+                          <td className="p-3 text-sm">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                              {result.categoría_contacto || '-'}
+                            </span>
                           </td>
                         </tr>
                       ))}
