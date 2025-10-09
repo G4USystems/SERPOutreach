@@ -511,7 +511,7 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                 {isAnalyzing ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Analizando sitios...
+                    Analizando {selectedKeywords.size} keyword{selectedKeywords.size !== 1 ? 's' : ''}... Puede tardar 1-2 minutos
                   </>
                 ) : (
                   <>
@@ -521,6 +521,29 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                 )}
               </Button>
             </div>
+
+            {/* Info Message when analyzing */}
+            {isAnalyzing && (
+              <Card className="w-full border-2 border-blue-200 bg-blue-50">
+                <div className="p-6 text-center space-y-3">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <h3 className="text-xl font-semibold text-blue-900">
+                      Analizando SERPs en Google...
+                    </h3>
+                  </div>
+                  <p className="text-blue-800">
+                    Estamos buscando y analizando los mejores sitios para outreach.
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    ⏱️ Este proceso puede tardar <strong>1-3 minutos</strong> dependiendo de la cantidad de keywords seleccionadas.
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    💡 Tip: Para resultados más rápidos, selecciona máximo 3-5 keywords a la vez.
+                  </p>
+                </div>
+              </Card>
+            )}
 
             {/* Keywords Table */}
             <Card className="w-full border-2 bg-card">
