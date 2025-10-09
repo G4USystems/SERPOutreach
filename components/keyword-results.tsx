@@ -36,7 +36,7 @@ interface KeywordResultsProps {
   keywordData: KeywordData[]
 }
 
-const SERP_WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook-test/SERP-outreach"
+const SERP_WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach"
 
 export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
