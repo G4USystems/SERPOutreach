@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERP Webhook Debug</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        h1 {
+            color: #00ff00;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .status.pending { border-color: #ffaa00; background: #332200; }
+        .status.testing { border-color: #00aaff; background: #002233; }
+        .status.success { border-color: #00ff00; background: #003300; }
+        .status.error { border-color: #ff0000; background: #330000; color: #ff6666; }
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        .button:hover {
+            background: #00cc00;
+            transform: scale(1.05);
+        }
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .log {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        .log-entry.error { border-color: #ff0000; color: #ff6666; }
+        .log-entry.warning { border-color: #ffaa00; color: #ffaa00; }
+        .log-entry.info { border-color: #00aaff; color: #00aaff; }
+        .timestamp {
+            color: #666;
+            font-size: 10px;
+            margin-right: 10px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .test-card h3 {
+            color: #00aaff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        .stat-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            border: 1px solid #333;
+        }
+        .json-viewer {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 SERP WEBHOOK DEBUG TOOL</h1>
+        
+        <div class="status pending" id="mainStatus">
+            ⏳ Listo para iniciar pruebas
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="button" onclick="testConnection()">1️⃣ Test Conexión</button>
+            <button class="button" onclick="testOneKeyword()">2️⃣ Test 1 Keyword</button>
+            <button class="button" onclick="testMultipleKeywords()">3️⃣ Test 3 Keywords</button>
+            <button class="button" onclick="testTimeout()">4️⃣ Test con Timeout</button>
+            <button class="button" onclick="clearLogs()">🗑️ Limpiar Logs</button>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>📊 Estadísticas</h3>
+                <div class="stat">
+                    <span>Tests Ejecutados:</span>
+                    <span class="stat-value" id="testsRun">0</span>
+                </div>
+                <div class="stat">
+                    <span>Tests Exitosos:</span>
+                    <span class="stat-value" id="testsSuccess">0</span>
+                </div>
+                <div class="stat">
+                    <span>Tests Fallidos:</span>
+                    <span class="stat-value" id="testsFailed">0</span>
+                </div>
+                <div class="stat">
+                    <span>Tiempo Promedio:</span>
+                    <span class="stat-value" id="avgTime">0ms</span>
+                </div>
+            </div>
+
+            <div class="test-card">
+                <h3>🌐 Webhook Info</h3>
+                <div class="stat">
+                    <span>URL:</span>
+                    <span class="stat-value" style="font-size: 10px;" id="webhookUrl">-</span>
+                </div>
+                <div class="stat">
+                    <span>Status:</span>
+                    <span class="stat-value" id="webhookStatus">Desconocido</span>
+                </div>
+                <div class="stat">
+                    <span>CORS:</span>
+                    <span class="stat-value" id="corsStatus">-</span>
+                </div>
+                <div class="stat">
+                    <span>Último Error:</span>
+                    <span class="stat-value" style="font-size: 9px; color: #ff6666;" id="lastError">-</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 30px; color: #00aaff;">📝 Logs de Ejecución</h2>
+        <div class="log" id="logContainer">
+            <div class="log-entry info">
+                <span class="timestamp">[INIT]</span>
+                Sistema de debug iniciado. Selecciona un test para comenzar.
+            </div>
+        </div>
+
+        <h2 style="margin-top: 30px; color: #00aaff;">📦 Última Respuesta</h2>
+        <div class="json-viewer">
+            <pre id="responseViewer">Sin datos todavía...</pre>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach';
+        
+        let stats = {
+            testsRun: 0,
+            testsSuccess: 0,
+            testsFailed: 0,
+            totalTime: 0
+        };
+
+        document.getElementById('webhookUrl').textContent = WEBHOOK_URL;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+            
+            const container = document.getElementById('logContainer');
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('testsRun').textContent = stats.testsRun;
+            document.getElementById('testsSuccess').textContent = stats.testsSuccess;
+            document.getElementById('testsFailed').textContent = stats.testsFailed;
+            
+            const avgTime = stats.testsRun > 0 ? Math.round(stats.totalTime / stats.testsRun) : 0;
+            document.getElementById('avgTime').textContent = avgTime + 'ms';
+        }
+
+        function setMainStatus(message, type = 'pending') {
+            const status = document.getElementById('mainStatus');
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+
+        function updateWebhookInfo(status, error = null) {
+            document.getElementById('webhookStatus').textContent = status;
+            if (error) {
+                document.getElementById('lastError').textContent = error;
+            }
+        }
+
+        async function testConnection() {
+            log('🔌 Iniciando test de conexión...', 'info');
+            setMainStatus('🔌 Probando conexión...', 'testing');
+            
+            const startTime = performance.now();
+            stats.testsRun++;
+
+            try {
+                log('📤 Enviando OPTIONS request para CORS...', 'info');
+                
+                const corsResponse = await fetch(WEBHOOK_URL, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+
+                log(`✅ CORS response: ${corsResponse.status}`, 'info');
+                document.getElementById('corsStatus').textContent = '✅ Configurado';
+                
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                stats.testsSuccess++;
+                stats.totalTime += duration;
+                updateStats();
+                
+                setMainStatus(`✅ Conexión OK (${duration}ms)`, 'success');
+                updateWebhookInfo('Online');
+                log(`✅ Test completado en ${duration}ms`, 'info');
+                
+            } catch (error) {
+                stats.testsFailed++;
+                updateStats();
+                
+                const errorMsg = error.message || 'Error desconocido';
+                log(`❌ Error de conexión: ${errorMsg}`, 'error');
+                setMainStatus(`❌ Error: ${errorMsg}`, 'error');
+                updateWebhookInfo('Offline', errorMsg);
+            }
+        }
+
+        async function testOneKeyword() {
+            log('🔍 Iniciando test con 1 keyword...', 'info');
+            setMainStatus('🔍 Procesando 1 keyword...', 'testing');
+            
+            const startTime = performance.now();
+            stats.testsRun++;
+
+            const payload = {
+                keywords: ['test'],
+                location_name: 'Spain',
+                language_name: 'Spanish'
+            };
+
+            log('📤 Payload: ' + JSON.stringify(payload), 'info');
+
+            try {
+                // Timeout de 15 segundos para este test
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    controller.abort();
+                    log('⚠️ Request abortada después de 15 segundos', 'warning');
+                }, 15000);
+
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+
+                log(`📥 Response status: ${response.status}`, 'info');
+                
+                const data = await response.json();
+                
+                stats.testsSuccess++;
+                stats.totalTime += duration;
+                updateStats();
+                
+                document.getElementById('responseViewer').textContent = JSON.stringify(data, null, 2);
+                
+                const resultCount = Array.isArray(data) ? data.length : (data.results ? data.results.length : 0);
+                log(`✅ Recibidos ${resultCount} resultados en ${duration}ms`, 'info');
+                setMainStatus(`✅ Test exitoso: ${resultCount} resultados en ${duration}ms`, 'success');
+                updateWebhookInfo('Funcionando');
+                
+            } catch (error) {
+                stats.testsFailed++;
+                updateStats();
+                
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                let errorMsg = error.message || 'Error desconocido';
+                
+                if (error.name === 'AbortError') {
+                    errorMsg = 'TIMEOUT: El webhook tardó más de 15 segundos';
+                    log(`⚠️ ${errorMsg}`, 'warning');
+                    log('💡 Esto indica que el workflow está procesando pero es muy lento', 'warning');
+                } else {
+                    log(`❌ Error: ${errorMsg}`, 'error');
+                }
+                
+                setMainStatus(`❌ ${errorMsg} (${duration}ms)`, 'error');
+                updateWebhookInfo('Error', errorMsg);
+                document.getElementById('responseViewer').textContent = `Error:\n${errorMsg}\n\nTiempo transcurrido: ${duration}ms`;
+            }
+        }
+
+        async function testMultipleKeywords() {
+            log('🔍 Iniciando test con 3 keywords...', 'info');
+            setMainStatus('🔍 Procesando 3 keywords...', 'testing');
+            
+            const startTime = performance.now();
+            stats.testsRun++;
+
+            const payload = {
+                keywords: ['seo', 'marketing', 'analytics'],
+                location_name: 'Spain',
+                language_name: 'Spanish'
+            };
+
+            log('📤 Payload: ' + JSON.stringify(payload), 'info');
+
+            try {
+                // Timeout de 30 segundos para multiple keywords
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    controller.abort();
+                    log('⚠️ Request abortada después de 30 segundos', 'warning');
+                }, 30000);
+
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+
+                log(`📥 Response status: ${response.status}`, 'info');
+                
+                const data = await response.json();
+                
+                stats.testsSuccess++;
+                stats.totalTime += duration;
+                updateStats();
+                
+                document.getElementById('responseViewer').textContent = JSON.stringify(data, null, 2);
+                
+                const resultCount = Array.isArray(data) ? data.length : (data.results ? data.results.length : 0);
+                log(`✅ Recibidos ${resultCount} resultados en ${duration}ms`, 'info');
+                setMainStatus(`✅ Test exitoso: ${resultCount} resultados en ${duration}ms`, 'success');
+                updateWebhookInfo('Funcionando');
+                
+            } catch (error) {
+                stats.testsFailed++;
+                updateStats();
+                
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                let errorMsg = error.message || 'Error desconocido';
+                
+                if (error.name === 'AbortError') {
+                    errorMsg = 'TIMEOUT: El webhook tardó más de 30 segundos con 3 keywords';
+                    log(`⚠️ ${errorMsg}`, 'warning');
+                    log('💡 El workflow no puede procesar 3 keywords en tiempo razonable', 'warning');
+                } else {
+                    log(`❌ Error: ${errorMsg}`, 'error');
+                }
+                
+                setMainStatus(`❌ ${errorMsg} (${duration}ms)`, 'error');
+                updateWebhookInfo('Error', errorMsg);
+                document.getElementById('responseViewer').textContent = `Error:\n${errorMsg}\n\nTiempo transcurrido: ${duration}ms`;
+            }
+        }
+
+        async function testTimeout() {
+            log('⏱️ Iniciando test de timeout (5 segundos)...', 'info');
+            setMainStatus('⏱️ Test de timeout...', 'testing');
+            
+            const startTime = performance.now();
+            stats.testsRun++;
+
+            const payload = {
+                keywords: ['test'],
+                location_name: 'Spain',
+                language_name: 'Spanish'
+            };
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    controller.abort();
+                }, 5000);
+
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+
+                const data = await response.json();
+                
+                stats.testsSuccess++;
+                stats.totalTime += duration;
+                updateStats();
+                
+                log(`✅ Respuesta recibida en ${duration}ms (antes del timeout)`, 'info');
+                setMainStatus(`✅ Webhook responde en menos de 5 segundos`, 'success');
+                
+            } catch (error) {
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                if (error.name === 'AbortError') {
+                    stats.testsFailed++;
+                    log(`❌ TIMEOUT: El webhook NO respondió en 5 segundos`, 'error');
+                    log(`⚠️ Tiempo transcurrido: ${duration}ms`, 'warning');
+                    setMainStatus(`❌ Webhook muy lento: >${duration}ms`, 'error');
+                } else {
+                    stats.testsFailed++;
+                    log(`❌ Error: ${error.message}`, 'error');
+                    setMainStatus(`❌ Error: ${error.message}`, 'error');
+                }
+                
+                updateStats();
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('🗑️ Logs limpiados', 'info');
+        }
+
+        // Auto-test de conexión al cargar
+        setTimeout(() => {
+            log('🚀 Ejecutando test de conexión automático...', 'info');
+            testConnection();
+        }, 1000);
+    </script>
+</body>
+</html>
+

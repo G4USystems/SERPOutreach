@@ -72,6 +72,17 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
   const handleSearchSites = async () => {
     if (selectedKeywords.size === 0) return
 
+    // Advertencia si hay muchas keywords
+    if (selectedKeywords.size > 5) {
+      const confirm = window.confirm(
+        `⚠️ Has seleccionado ${selectedKeywords.size} keywords.\n\n` +
+        `Procesar muchas keywords puede tardar varios minutos y puede causar timeouts.\n\n` +
+        `Recomendamos procesar máximo 5 keywords a la vez.\n\n` +
+        `¿Deseas continuar de todas formas?`
+      )
+      if (!confirm) return
+    }
+
     setIsLoading(true)
     setError(null)
     setSuccess(false)
@@ -243,7 +254,13 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
         console.error("[v0] Error stack:", err.stack)
         
         if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
-          errorMessage = `No se pudo conectar con el webhook SERP. URL: ${SERP_WEBHOOK_ENDPOINT}. Error: ${err.message}. Verifica que el flujo de n8n esté activo y la URL sea correcta.`
+          errorMessage = `⚠️ TIMEOUT DEL SERVIDOR (504)\n\n` +
+            `El webhook SERP está tardando demasiado en procesar las keywords.\n\n` +
+            `SOLUCIONES:\n` +
+            `1️⃣ Selecciona MENOS keywords (máximo 3-5)\n` +
+            `2️⃣ Revisa el workflow en n8n - puede estar procesando demasiados resultados\n` +
+            `3️⃣ Verifica que no haya rate limits en las APIs de SERP\n\n` +
+            `URL: ${SERP_WEBHOOK_ENDPOINT}`
         } else {
           errorMessage = `Error: ${err.message}`
         }
