@@ -206,13 +206,18 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
       console.log("[v0] All SERP results:", processedSerpResults)
     } catch (err) {
       console.error("[v0] Error en análisis Serp Outreach:", err)
+      console.error("[v0] Error completo:", JSON.stringify(err, Object.getOwnPropertyNames(err)))
       
       let errorMessage = 'Error desconocido'
       if (err instanceof Error) {
-        if (err.message.includes('Failed to fetch') || err.message.includes('fetch')) {
-          errorMessage = 'No se pudo conectar con el webhook SERP. Verifica que el flujo de n8n esté activo y la URL sea correcta.'
+        console.error("[v0] Error name:", err.name)
+        console.error("[v0] Error message:", err.message)
+        console.error("[v0] Error stack:", err.stack)
+        
+        if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
+          errorMessage = `No se pudo conectar con el webhook SERP. URL: ${SERP_WEBHOOK_ENDPOINT}. Error: ${err.message}. Verifica que el flujo de n8n esté activo y la URL sea correcta.`
         } else {
-          errorMessage = err.message
+          errorMessage = `Error: ${err.message}`
         }
       }
       

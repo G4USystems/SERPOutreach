@@ -50,14 +50,22 @@ export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
       }
       
       console.log("[v0] Enviando payload al webhook:", payload)
+      console.log("[v0] URL del webhook:", WEBHOOK_ENDPOINT)
+      console.log("[v0] Iniciando fetch request...")
 
       const response = await fetch(WEBHOOK_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json"
         },
         body: JSON.stringify(payload),
+        mode: 'cors',
+        credentials: 'omit'
       })
+
+      console.log("[v0] Fetch completado, status:", response.status)
+      console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -144,13 +152,24 @@ export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
       onShowResults(sortedResults)
     } catch (err) {
       console.error("[v0] Error fetching keywords:", err)
+      console.error("[v0] Error completo:", JSON.stringify(err, Object.getOwnPropertyNames(err)))
       
-      // Show detailed error information to help debug the webhook issue
-      if (err instanceof Error && err.message.includes("Workflow Webhook Error")) {
-        setError("Error del webhook n8n: El workflow no pudo iniciarse. Verifica que el workflow esté activo y configurado correctamente en n8n.")
-      } else {
-        setError(err instanceof Error ? err.message : "Error desconocido al conectar con el servicio de keywords")
+      let errorMessage = 'Error desconocido'
+      if (err instanceof Error) {
+        console.error("[v0] Error name:", err.name)
+        console.error("[v0] Error message:", err.message)
+        console.error("[v0] Error stack:", err.stack)
+        
+        if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
+          errorMessage = `No se pudo conectar con el webhook de Keywords. URL: ${WEBHOOK_ENDPOINT}. Error: ${err.message}. Verifica que el flujo de n8n esté activo y la URL sea correcta.`
+        } else if (err.message.includes("Workflow Webhook Error")) {
+          errorMessage = "Error del webhook n8n: El workflow no pudo iniciarse. Verifica que el workflow esté activo y configurado correctamente en n8n."
+        } else {
+          errorMessage = `Error: ${err.message}`
+        }
       }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
