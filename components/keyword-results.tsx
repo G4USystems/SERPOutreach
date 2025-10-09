@@ -129,9 +129,9 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
         const resultsPerKeyword = Math.ceil(data.length / selectedKeywordTexts.length)
         
         processedSerpResults = data.map((item: any, index: number) => {
-          // Determinar qué keyword corresponde a este resultado
+          // Usar el keyword del item si está disponible, sino asignar uno de los enviados
           const keywordIndex = Math.floor(index / resultsPerKeyword)
-          const assignedKeyword = selectedKeywordTexts[keywordIndex] || selectedKeywordTexts[0] || 'N/A'
+          const assignedKeyword = item.keyword || selectedKeywordTexts[keywordIndex] || selectedKeywordTexts[0] || 'N/A'
           
           // Extraer dominio de la URL
           let domain = 'N/A'
@@ -144,11 +144,11 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
           }
           
           return {
-            id: `${assignedKeyword}-${item.position || index}`,
-            keyword: item.query || item.keyword || assignedKeyword,
+            id: `${assignedKeyword}-${item.url || index}`,
+            keyword: assignedKeyword,
             url: item.url || 'N/A',
-            title: item.title || item.titulo || item.título || 'N/A',
-            position: item.position || (index % 10) + 1,
+            title: item.title || item.título || item.titulo || 'N/A',
+            position: item.position || index + 1,
             domain: domain,
             type: item.type || 'organic',
             channel: item.channel || 'N/A',
@@ -156,11 +156,11 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
             platform: item.platform || item.plataforma || null,
             razon: item.razon || item.razón || null,
             type_classification: item.type_classification || item.clasificación || item.tipo_clasificacion || null,
-            permite_pautar: item.permite_pautar || null,
+            permite_pautar: item.permite_pautar || 'SI',
             email_contact: item.email_contact || item.email || item.dirección_contacto || null,
-            medio_contacto: item.medio_contacto || null,
-            dirección_contacto: item.dirección_contacto || null,
-            categoría_contacto: item.categoría_contacto || null
+            medio_contacto: item.medio_contacto || 'NO_DATOS',
+            dirección_contacto: item.dirección_contacto || 'NO_DATOS',
+            categoría_contacto: item.categoría_contacto || 'NO_DATOS'
           }
         })
       } else if (data && Array.isArray(data.results)) {
@@ -169,23 +169,35 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
         
         processedSerpResults = data.results.map((item: any, index: number) => {
           const keywordIndex = Math.floor(index / resultsPerKeyword)
-          const assignedKeyword = selectedKeywordTexts[keywordIndex] || selectedKeywordTexts[0] || 'N/A'
+          const assignedKeyword = item.keyword || selectedKeywordTexts[keywordIndex] || selectedKeywordTexts[0] || 'N/A'
+          
+          let domain = 'N/A'
+          try {
+            if (item.url) {
+              domain = new URL(item.url).hostname
+            }
+          } catch (e) {
+            console.warn("[v0] Error extrayendo dominio de:", item.url)
+          }
           
           return {
-            id: `${assignedKeyword}-${item.position || index}`,
-            keyword: item.query || item.keyword || assignedKeyword,
+            id: `${assignedKeyword}-${item.url || index}`,
+            keyword: assignedKeyword,
             url: item.url || 'N/A',
-            title: item.title || item.titulo || 'N/A',
-            position: item.position || (index % 10) + 1,
-            domain: item.url ? new URL(item.url).hostname : 'N/A',
+            title: item.title || item.título || item.titulo || 'N/A',
+            position: item.position || index + 1,
+            domain: domain,
             type: item.type || 'organic',
             channel: item.channel || 'N/A',
             duration: item.duration || item.duracion || null,
             platform: item.platform || item.plataforma || null,
-            razon: item.razon || null,
-            type_classification: item.type_classification || item.tipo_clasificacion || null,
-            permite_pautar: item.permite_pautar || null,
-            email_contact: item.email_contact || item.email || null
+            razon: item.razon || item.razón || null,
+            type_classification: item.type_classification || item.clasificación || item.tipo_clasificacion || null,
+            permite_pautar: item.permite_pautar || 'SI',
+            email_contact: item.email_contact || item.email || item.dirección_contacto || null,
+            medio_contacto: item.medio_contacto || 'NO_DATOS',
+            dirección_contacto: item.dirección_contacto || 'NO_DATOS',
+            categoría_contacto: item.categoría_contacto || 'NO_DATOS'
           }
         })
       } else {
