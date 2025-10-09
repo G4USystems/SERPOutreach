@@ -73,11 +73,13 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
     if (selectedKeywords.size === 0) return
 
     // Advertencia si hay muchas keywords
-    if (selectedKeywords.size > 5) {
+    if (selectedKeywords.size > 2) {
       const confirm = window.confirm(
         `⚠️ Has seleccionado ${selectedKeywords.size} keywords.\n\n` +
-        `Procesar muchas keywords puede tardar varios minutos y puede causar timeouts.\n\n` +
-        `Recomendamos procesar máximo 5 keywords a la vez.\n\n` +
+        `⏱️ IMPORTANTE: El webhook actualmente tarda ~1 minuto por keyword.\n` +
+        `Con ${selectedKeywords.size} keywords, el proceso tardará ${selectedKeywords.size} minutos aproximadamente.\n\n` +
+        `🚨 Si tarda más de 2 minutos, el navegador cortará la conexión y verás un error.\n\n` +
+        `💡 RECOMENDACIÓN: Procesa máximo 1-2 keywords a la vez hasta optimizar el workflow.\n\n` +
         `¿Deseas continuar de todas formas?`
       )
       if (!confirm) return
@@ -569,10 +571,10 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                     ⏱️ Este proceso puede tardar <strong>1-3 minutos</strong> dependiendo de la cantidad de keywords seleccionadas.
                   </p>
                   <p className="text-xs text-blue-600">
-                    💡 Tip: Para resultados más rápidos, selecciona máximo 2-3 keywords a la vez.
+                    💡 Tip: El webhook tarda ~1 minuto por keyword. Selecciona máximo 1-2 keywords para evitar timeouts.
                   </p>
                   <p className="text-xs text-blue-500 mt-2">
-                    🔧 Si obtienes un error pero el proceso completó, intenta con menos keywords o revisa OPTIMIZE-N8N-WORKFLOW.md
+                    🔧 Para procesar más keywords más rápido, optimiza el workflow según OPTIMIZE-N8N-WORKFLOW.md
                   </p>
                 </div>
               </Card>
