@@ -39,7 +39,10 @@ interface KeywordResultsProps {
   keywordData: KeywordData[]
 }
 
-const SERP_WEBHOOK_ENDPOINT = "https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach"
+// Use proxy in development, direct webhook in production
+const SERP_WEBHOOK_ENDPOINT = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? '/api/serp'
+  : 'https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach'
 
 export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
@@ -52,19 +55,26 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
   const [showSerpResults, setShowSerpResults] = useState(false)
 
   const handleCheckboxChange = (keywordId: string, checked: boolean) => {
+    console.log('[CHECKBOX] handleCheckboxChange called:', { keywordId, checked, currentSize: selectedKeywords.size })
     const newSelected = new Set(selectedKeywords)
     if (checked) {
       newSelected.add(keywordId)
+      console.log('[CHECKBOX] Added keyword:', keywordId, 'New size:', newSelected.size)
     } else {
       newSelected.delete(keywordId)
+      console.log('[CHECKBOX] Removed keyword:', keywordId, 'New size:', newSelected.size)
     }
     setSelectedKeywords(newSelected)
   }
 
   const handleSelectAll = (checked: boolean) => {
+    console.log('[CHECKBOX] handleSelectAll called:', { checked, totalKeywords: keywordData.length })
     if (checked) {
-      setSelectedKeywords(new Set(keywordData.map((k) => k.id)))
+      const allIds = keywordData.map((k) => k.id)
+      console.log('[CHECKBOX] Selecting all:', allIds)
+      setSelectedKeywords(new Set(allIds))
     } else {
+      console.log('[CHECKBOX] Deselecting all')
       setSelectedKeywords(new Set())
     }
   }
