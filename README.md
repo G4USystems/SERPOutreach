@@ -1,73 +1,233 @@
-# SERP Outreach - Growth 4U
+# 🚀 SERP Outreach Pro - Growth 4U
 
-Una aplicación web para análisis de palabras clave y investigación SERP.
+Sistema completo de outreach para link building que integra investigación de keywords, análisis SERP, extracción de contactos y gestión de campañas.
 
-## 🚀 Características
+## ✨ Estado Actual
 
-- **Búsqueda de Keywords**: Encuentra las mejores palabras clave para tu estrategia SEO
-- **Análisis SERP**: Analiza los resultados de búsqueda de Google para keywords seleccionadas
-- **Exportación CSV**: Exporta todos los resultados para análisis posterior
-- **Interfaz Moderna**: UI responsive y fácil de usar
+### ✅ Funcionalidades Activas
+
+- **🏠 Dashboard**: Vista general con métricas y quick actions
+- **🔍 Keywords Research**: Búsqueda y análisis de keywords con datos de volumen, CPC y competencia
+- **🎯 SERP Analysis**: Análisis de resultados de búsqueda para encontrar oportunidades de outreach
+- **⚙️ Settings**: Configuración de webhooks y estado del sistema
+- **🌙 Dark Mode**: Tema oscuro/claro con persistencia
+- **📱 Responsive**: Diseño adaptable a móvil, tablet y desktop
+
+### ⏳ Próximamente
+
+- **👥 Contacts Management**: Gestión de contactos extraídos
+- **📧 Campaigns**: Sistema de campañas de outreach
+- **📊 Analytics**: Métricas detalladas y reportes
+- **🔗 Backlinks**: Tracking de backlinks adquiridos
 
 ## 🛠️ Tecnologías
 
-- **Next.js 14** - Framework React
-- **TypeScript** - Tipado estático
-- **Tailwind CSS** - Estilos
-- **Radix UI** - Componentes accesibles
-- **n8n Webhooks** - Integración con flujos de automatización
+- **Frontend**: Next.js 14, React, TypeScript
+- **Estilos**: Tailwind CSS 4
+- **UI Components**: Radix UI, shadcn/ui, Lucide Icons
+- **Backend**: n8n webhooks
+- **Database**: Google Sheets (próximamente)
+- **Analytics**: Vercel Analytics
 
-## 📦 Instalación Local
+## 📋 Requisitos
+
+- Node.js 18+
+- npm o pnpm
+- Acceso a webhooks de n8n
+
+## 🚀 Instalación y Uso
+
+### 1. Instalar Dependencias
 
 ```bash
-# Clonar el repositorio
-git clone [tu-repositorio]
-
-# Instalar dependencias
 npm install
-
-# Ejecutar en desarrollo
-npm run dev
-
-# Compilar para producción
-npm run build
-npm start
 ```
 
-## 🌐 Despliegue
+### 2. Ejecutar en Desarrollo
+
+```bash
+npm run dev
+```
+
+### 3. Abrir en el Navegador
+
+Visita [http://localhost:3000](http://localhost:3000)
+
+## 📁 Estructura del Proyecto
+
+```
+├── app/
+│   ├── globals.css           # Estilos globales
+│   ├── layout.tsx            # Layout principal
+│   └── page.tsx              # Página principal
+├── components/
+│   ├── outreach-tool.tsx     # Componente principal del sistema
+│   ├── keyword-explorer.tsx  # Búsqueda de keywords
+│   ├── keyword-results.tsx   # Resultados SERP
+│   ├── theme-provider.tsx    # Provider de tema
+│   └── ui/                   # Componentes UI reutilizables
+├── lib/
+│   └── utils.ts              # Utilidades
+├── public/
+│   └── images/               # Imágenes y assets
+└── docs/
+    ├── ARCHITECTURE-PLAN.md  # Plan de arquitectura completo
+    ├── MAPEO-CAMPOS.md       # Mapeo de campos webhook
+    └── WEBHOOK-FORMAT.md     # Formato de webhooks
+```
+
+## 🔌 Webhooks Activos
+
+### 1. Keywords Research
+**URL**: `https://n8n-growth4u-u37225.vm.elestio.app/webhook/v0-KWs`
+
+**Input**:
+```json
+{
+  "keywords": ["keyword1", "keyword2"],
+  "location_name": "Spain",
+  "language_name": "Spanish"
+}
+```
+
+**Output**:
+```json
+[
+  {
+    "keyword": "keyword1",
+    "search_volume": 12000,
+    "competition": "HIGH",
+    "cpc": 2.5
+  }
+]
+```
+
+### 2. SERP Analysis
+**URL**: `https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach`
+
+**Input**:
+```json
+{
+  "keywords": ["keyword1"],
+  "location_name": "Spain",
+  "language_name": "Spanish"
+}
+```
+
+**Output**:
+```json
+[
+  {
+    "url": "https://example.com",
+    "title": "Article Title",
+    "keyword": "keyword1",
+    "type_classification": "article",
+    "permite_pautar": "SI",
+    "razon": "Good content quality",
+    "medio_contacto": "email",
+    "dirección_contacto": "contact@example.com",
+    "categoría_contacto": "direct"
+  }
+]
+```
+
+## 🎯 Flujo de Trabajo
+
+1. **Keywords Research** → Busca keywords relevantes
+2. **SERP Analysis** → Analiza resultados de búsqueda
+3. **Review Opportunities** → Revisa sitios encontrados
+4. **Export Data** → Descarga resultados en CSV
+
+## 🎨 Características de UI
+
+### Dashboard
+- Stats cards con métricas clave
+- Quick actions para acceso rápido
+- Diseño moderno con gradientes
+
+### Sidebar
+- Navegación clara con iconos
+- Badges para features próximas
+- Colapsable para más espacio
+
+### Keywords
+- Búsqueda intuitiva
+- Tabla con datos detallados
+- Selección múltiple de keywords
+
+### Opportunities
+- Análisis SERP completo
+- Información de contacto
+- Clasificación por tipo de contenido
+- Export a CSV
+
+## 📊 Datos Procesados
+
+### Keywords
+- Volumen de búsqueda
+- CPC (Cost Per Click)
+- Nivel de competencia
+- Tendencias
+
+### Opportunities
+- URL del sitio
+- Título del contenido
+- Dominio
+- Clasificación (article, video, social)
+- Permite pautar (SI/NO)
+- Razón de inclusión
+- Medio de contacto
+- Dirección de contacto
+- Categoría de contacto
+
+## 🚀 Despliegue
 
 ### Vercel (Recomendado)
-1. Conecta tu repositorio en [vercel.com](https://vercel.com)
-2. Vercel detectará automáticamente la configuración Next.js
-3. Se desplegará automáticamente en cada push
 
-### Netlify
-1. Arrastra la carpeta del proyecto a [netlify.com](https://netlify.com)
-2. O conecta tu repositorio Git
+1. Conecta tu repositorio de GitHub
+2. Vercel detectará Next.js automáticamente
+3. Deploy con un clic
 
-## ⚙️ Configuración
+Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para más detalles.
 
-La aplicación utiliza webhooks de n8n para:
-- **Búsqueda de Keywords**: `https://n8n-growth4u-u37225.vm.elestio.app/webhook/v0-KWs`
-- **Análisis SERP**: `https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach`
+## 📚 Documentación
 
-## 📱 Uso
+- **[ARCHITECTURE-PLAN.md](./ARCHITECTURE-PLAN.md)**: Arquitectura completa del sistema
+- **[MAPEO-CAMPOS.md](./MAPEO-CAMPOS.md)**: Mapeo de campos webhook → frontend
+- **[WEBHOOK-FORMAT.md](./WEBHOOK-FORMAT.md)**: Formato detallado de webhooks
 
-1. **Buscar Keywords**: Ingresa términos separados por comas
-2. **Seleccionar Keywords**: Marca las keywords que quieres analizar
-3. **Análisis SERP**: Ejecuta el análisis de resultados de Google
-4. **Exportar**: Descarga los resultados en formato CSV
+## 🔐 Seguridad
 
-## 🎯 Funcionalidades
+- Webhooks con autenticación
+- Variables de entorno para secrets
+- Validación de datos en frontend
+- CORS configurado correctamente
 
-- ✅ Búsqueda de keywords con volumen y competencia
-- ✅ Ordenamiento por volumen de búsqueda
-- ✅ Selección múltiple de keywords
-- ✅ Análisis SERP detallado
-- ✅ Exportación CSV completa
-- ✅ Interfaz responsive
-- ✅ Manejo de errores robusto
+## 📝 Changelog
+
+### v1.0.0 (Actual)
+- ✅ Dashboard con stats
+- ✅ Keywords research completo
+- ✅ SERP analysis completo
+- ✅ Export a CSV
+- ✅ Dark mode
+- ✅ Responsive design
+- ✅ Settings page
+
+### Próximas Versiones
+- 🔜 v1.1.0: Contact management
+- 🔜 v1.2.0: Campaign system
+- 🔜 v1.3.0: Analytics dashboard
+- 🔜 v2.0.0: AI-powered features
+
+## 📧 Soporte
+
+Para soporte o preguntas, contacta a: accounts@growth4u.io
+
+## 📄 Licencia
+
+© 2024 Growth 4U. Todos los derechos reservados.
 
 ---
 
-Desarrollado por **Growth 4U** 🚀
+**Desarrollado con ❤️ por Growth 4U**
