@@ -104,17 +104,38 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
       console.log("[v0] URL del webhook:", SERP_WEBHOOK_ENDPOINT)
       console.log("[v0] Iniciando fetch request...")
 
-      // Sin timeout - esperará todo el tiempo necesario
-      const response = await fetch(SERP_WEBHOOK_ENDPOINT, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(payload),
-        mode: 'cors',
-        credentials: 'omit'
-      })
+      const startTime = Date.now()
+
+      // Configurar timeout de 3 minutos (180 segundos)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => {
+        controller.abort()
+        console.log("[v0] Request abortada después de 3 minutos")
+      }, 180000) // 3 minutos
+
+      let response
+      try {
+        response = await fetch(SERP_WEBHOOK_ENDPOINT, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload),
+          mode: 'cors',
+          credentials: 'omit',
+          signal: controller.signal
+        })
+        clearTimeout(timeoutId)
+        
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+        console.log(`[v0] ✅ Fetch completado en ${elapsed} segundos`)
+      } catch (fetchError) {
+        clearTimeout(timeoutId)
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+        console.log(`[v0] ❌ Fetch falló después de ${elapsed} segundos:`, fetchError)
+        throw fetchError
+      }
 
       console.log("[v0] Fetch completado, status:", response.status)
       console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
@@ -253,16 +274,25 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
         console.error("[v0] Error message:", err.message)
         console.error("[v0] Error stack:", err.stack)
         
-        if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
-          errorMessage = `⚠️ TIMEOUT DEL SERVIDOR (504)\n\n` +
-            `El webhook SERP está tardando demasiado en procesar las keywords.\n\n` +
+        if (err.name === 'AbortError') {
+          errorMessage = `⏱️ TIMEOUT: El proceso tardó más de 3 minutos\n\n` +
+            `El webhook SERP está procesando pero tarda demasiado.\n\n` +
             `SOLUCIONES:\n` +
-            `1️⃣ Selecciona MENOS keywords (máximo 3-5)\n` +
-            `2️⃣ Revisa el workflow en n8n - puede estar procesando demasiados resultados\n` +
-            `3️⃣ Verifica que no haya rate limits en las APIs de SERP\n\n` +
-            `URL: ${SERP_WEBHOOK_ENDPOINT}`
+            `1️⃣ Selecciona MENOS keywords (máximo 2-3)\n` +
+            `2️⃣ Revisa el workflow en n8n - optimiza según OPTIMIZE-N8N-WORKFLOW.md\n` +
+            `3️⃣ Verifica que las APIs externas respondan rápido\n\n` +
+            `💡 El webhook funciona, solo necesita optimización.`
+        } else if (err.message.includes('Failed to fetch') || err.message.includes('fetch') || err.message.includes('NetworkError')) {
+          errorMessage = `🔌 ERROR DE CONEXIÓN\n\n` +
+            `No se pudo conectar con el webhook SERP.\n\n` +
+            `Posibles causas:\n` +
+            `1️⃣ El workflow en n8n está inactivo\n` +
+            `2️⃣ Problemas de red o CORS\n` +
+            `3️⃣ El servidor está sobrecargado\n\n` +
+            `URL: ${SERP_WEBHOOK_ENDPOINT}\n\n` +
+            `💡 Verifica que el workflow esté activo en n8n.`
         } else {
-          errorMessage = `Error: ${err.message}`
+          errorMessage = `❌ Error: ${err.message}`
         }
       }
       
@@ -539,7 +569,10 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                     ⏱️ Este proceso puede tardar <strong>1-3 minutos</strong> dependiendo de la cantidad de keywords seleccionadas.
                   </p>
                   <p className="text-xs text-blue-600">
-                    💡 Tip: Para resultados más rápidos, selecciona máximo 3-5 keywords a la vez.
+                    💡 Tip: Para resultados más rápidos, selecciona máximo 2-3 keywords a la vez.
+                  </p>
+                  <p className="text-xs text-blue-500 mt-2">
+                    🔧 Si obtienes un error pero el proceso completó, intenta con menos keywords o revisa OPTIMIZE-N8N-WORKFLOW.md
                   </p>
                 </div>
               </Card>
