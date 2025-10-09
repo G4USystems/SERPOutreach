@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const SERP_WEBHOOK_URL = 'https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach'
 
+// Increase Vercel function timeout (requires Vercel Pro for >10s)
+// On free plan, this will timeout at 10s
+export const maxDuration = 300 // 5 minutes (only works on Pro plan)
+
 export async function POST(request: NextRequest) {
   try {
     console.log('[API] SERP proxy request received')
