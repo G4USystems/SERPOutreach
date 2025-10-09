@@ -612,13 +612,11 @@ export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsPr
                         <tr key={keyword.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center justify-center">
-                              <label className="cursor-pointer p-2 -m-2 rounded-md hover:bg-blue-50 transition-colors">
-                                <Checkbox
-                                  checked={selectedKeywords.has(keyword.id)}
-                                  onCheckedChange={(checked) => handleCheckboxChange(keyword.id, !!checked)}
-                                  className="h-5 w-5 border-2 border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 hover:border-blue-500 transition-colors cursor-pointer"
-                                />
-                              </label>
+                              <Checkbox
+                                checked={selectedKeywords.has(keyword.id)}
+                                onCheckedChange={(checked) => handleCheckboxChange(keyword.id, !!checked)}
+                                className="h-5 w-5 border-2 border-gray-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 hover:border-blue-500 transition-colors cursor-pointer"
+                              />
                             </div>
                           </td>
                           <td className="p-4 font-medium">{keyword.keyword}</td>
