@@ -1,0 +1,42 @@
+
+Para: support@elest.io
+Asunto: Aumentar proxy timeout en servicio n8n
+
+---
+
+Hola equipo de Elestio,
+
+Tengo un servicio n8n con ID: n8n-growth4u-u37225
+URL: https://n8n-growth4u-u37225.vm.elestio.app
+
+Mi problema:
+- Mis webhooks de n8n necesitan más de 60 segundos para responder
+- Tengo configurado EXECUTIONS_TIMEOUT=300000 (5 minutos) en n8n
+- Pero el gateway OpenResty/Nginx corta la conexión exactamente a los 60 segundos con error "504 Gateway Time-out"
+
+Lo que intenté:
+- Añadí estas variables de entorno:
+  NGINX_PROXY_READ_TIMEOUT=300
+  NGINX_PROXY_CONNECT_TIMEOUT=300
+  NGINX_PROXY_SEND_TIMEOUT=300
+- Reinicié el servicio
+- El problema persiste (sigue cortando a 60s)
+
+¿Pueden ayudarme a:
+1. Aumentar el proxy_read_timeout del gateway a 300 segundos (5 minutos)?
+2. O indicarme cómo puedo hacerlo yo mismo?
+
+Test que confirma el problema:
+curl -X POST https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach \
+  -H "Content-Type: application/json" \
+  -d '{"keywords":["test"],"location_name":"Spain","language_name":"Spanish"}' \
+  --max-time 180
+  
+Resultado: 504 Gateway Time-out a los 60 segundos exactos.
+
+Gracias por su ayuda.
+
+Martin
+
+---
+

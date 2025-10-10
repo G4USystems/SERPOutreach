@@ -140,14 +140,21 @@ export function KeywordExplorer({ onShowResults }: KeywordExplorerProps) {
               ]
             }
 
+      // Añadir IDs únicos a cada keyword
+      const resultsWithIds = processedResults.map((result, index) => ({
+        ...result,
+        id: `keyword-${result.keyword.replace(/\s+/g, '-')}-${index}`
+      }))
+
       // Ordenar keywords por volumen de búsqueda (mayor a menor)
-      const sortedResults = processedResults.sort((a, b) => {
+      const sortedResults = resultsWithIds.sort((a, b) => {
         const volumeA = a.search_volume || 0
         const volumeB = b.search_volume || 0
         return volumeB - volumeA
       })
       
       console.log("[v0] Keywords ordenadas por volumen:", sortedResults)
+      console.log("[v0] IDs únicos generados:", sortedResults.map(r => r.id))
 
       setResults(sortedResults)
       onShowResults(sortedResults)

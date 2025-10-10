@@ -39,13 +39,11 @@ interface KeywordResultsProps {
   keywordData: KeywordData[]
 }
 
-// TEMPORARY: Always use proxy until Elestio timeout is fixed
-// The Elestio gateway has a 60s timeout, but webhooks take 60-120s
-// Using Next.js API route as proxy avoids the Elestio gateway timeout
-const SERP_WEBHOOK_ENDPOINT = '/api/serp'
+// TEST: Try direct connection to see if it works differently
+const SERP_WEBHOOK_ENDPOINT = 'https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach'
 
-// When Elestio timeout is fixed (>180s), use this instead:
-// const SERP_WEBHOOK_ENDPOINT = 'https://n8n-growth4u-u37225.vm.elestio.app/webhook/SERP-outreach'
+// If this doesn't work, switch back to proxy:
+// const SERP_WEBHOOK_ENDPOINT = '/api/serp'
 
 export function KeywordResults({ onBackToSearch, keywordData }: KeywordResultsProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
